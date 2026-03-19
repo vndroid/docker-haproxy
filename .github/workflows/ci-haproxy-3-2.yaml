@@ -85,7 +85,7 @@ jobs:
           echo "${ARCH_TAG}"
           echo "arch_tag=${ARCH_TAG}" >> $GITHUB_OUTPUT
       - name: Build and Push Image (${{ matrix.arch }})
-        uses: docker/build-push-action@v6
+        uses: docker/build-push-action@v7
         with:
           push: true
           context: ./${{ env.BRANCH }}
