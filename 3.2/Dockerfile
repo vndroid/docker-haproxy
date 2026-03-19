@@ -24,9 +24,9 @@ RUN set -eux; \
 	mkdir /var/lib/haproxy; \
 	chown haproxy:haproxy /var/lib/haproxy
 
-ENV HAPROXY_VERSION=3.2.9
-ENV HAPROXY_URL=https://www.haproxy.org/download/3.2/src/haproxy-3.2.9.tar.gz
-ENV HAPROXY_SHA256=e660d141b29019f4d198785b0834cc3e9c96efceeb807c2fff2fc935bd3354c2
+ENV HAPROXY_VERSION=3.2.10
+ENV HAPROXY_URL=https://www.haproxy.org/download/3.2/src/haproxy-3.2.10.tar.gz
+ENV HAPROXY_SHA256=df9412eee0faf78147cd3f1bbec9582ea678c33535b1afec081036c5bbb8015b
 
 # see https://sources.debian.net/src/haproxy/jessie/debian/rules/ for some helpful navigation of the possible "make" arguments
 RUN set -eux; \
@@ -57,6 +57,12 @@ RUN set -eux; \
 		USE_OPENSSL=1 \
 		USE_PCRE2=1 USE_PCRE2_JIT=1 \
 		USE_PROMEX=1 \
+		# https://github.com/haproxy/haproxy/blob/a203ce685464988afbd92c8a376fcafae9bab5b5/INSTALL#L368-L373
+		USE_PTHREAD_EMULATION=1 \
+		# https://www.haproxy.com/blog/announcing-haproxy-3-2#quic-protocol
+		# [in 3.2] QUIC TLS API was ported to OpenSSL 3.5
+		# Openssl 3.5+ is available on Debian Trixie and Alpine 3.22 and newer
+		USE_QUIC=1 \
 	'; \
 	\
 	nproc="$(getconf _NPROCESSORS_ONLN)"; \
