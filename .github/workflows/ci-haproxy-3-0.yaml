@@ -8,7 +8,7 @@ on:
     - cron: '0 0 3 * *'
   workflow_dispatch:
 env:
-  REGISTRY: ghcr.io
+  REGISTRY: 'ghcr.io'
   BRANCH: '3.0'
 jobs:
   prepare:
