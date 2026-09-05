@@ -1,5 +1,6 @@
 import argparse
 import re
+import shutil
 import subprocess
 import sys
 from pathlib import Path
@@ -9,6 +10,10 @@ from urllib.request import Request, urlopen
 REMOTE_URL_TEMPLATE = "https://git.haproxy.org/git/haproxy-{branch}.git/"
 DOWNLOAD_URL_TEMPLATE = (
     "https://www.haproxy.org/download/{branch}/src/haproxy-{version}.tar.gz"
+)
+USER_AGENT = (
+    "Mozilla/5.0 (Macintosh; Intel Mac OS X 10.15; rv:150.0) "
+    "Gecko/20100101 Firefox/150.0"
 )
 
 
@@ -129,14 +134,47 @@ def get_remote_tags(repo_url: str) -> str:
     return result.stdout
 
 
-def get_checksum(url: str, expected_filename: str) -> str:
-    request = Request(url, headers={"User-Agent": "Mozilla/5.0 (Macintosh; Intel Mac OS X 10.15; rv:150.0) Gecko/20100101 Firefox/150.0"})
+def fetch_resource(url: str) -> str:
+    curl = shutil.which("curl")
+    if curl:
+        try:
+            result = subprocess.run(
+                [
+                    curl,
+                    "--fail",
+                    "--silent",
+                    "--show-error",
+                    "--location",
+                    "--max-time",
+                    "30",
+                    "--user-agent",
+                    USER_AGENT,
+                    url,
+                ],
+                check=True,
+                capture_output=True,
+                timeout=35,
+            )
+        except subprocess.CalledProcessError as exc:
+            detail = exc.stderr.decode(errors="replace").strip() or str(exc)
+            raise UpdateError(f"curl failed to download {url}: {detail}") from exc
+        except subprocess.TimeoutExpired as exc:
+            raise UpdateError(f"curl timed out while downloading {url}.") from exc
+        try:
+            return result.stdout.decode("ascii")
+        except UnicodeError as exc:
+            raise UpdateError(f"resource from {url} is not ASCII text.") from exc
+
+    request = Request(url, headers={"User-Agent": USER_AGENT})
     try:
         with urlopen(request, timeout=30) as response:
-            content = response.read().decode("ascii")
+            return response.read().decode("ascii")
     except (OSError, UnicodeError) as exc:
-        raise UpdateError(f"failed to download SHA256 from {url}: {exc}") from exc
-    return parse_sha256(content, expected_filename)
+        raise UpdateError(f"failed to download {url}: {exc}") from exc
+
+
+def get_checksum(url: str, expected_filename: str) -> str:
+    return parse_sha256(fetch_resource(url), expected_filename)
 
 
 def update(

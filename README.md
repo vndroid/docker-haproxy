@@ -18,7 +18,9 @@ Dockerfile.
 
 The tool retrieves tags with `git ls-remote --tags --refs` and only considers
 stable releases from the selected branch. It obtains the SHA256 checksum from
-the official HAProxy download site and validates the archive filename.
+the official HAProxy download site and validates the archive filename. Resource
+downloads prefer the host's `curl` command and fall back to Python's standard
+library when `curl` is unavailable.
 
 ```bash
 # Check and update every detected branch (for example, 3.0, 3.2, and 3.4)

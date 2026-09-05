@@ -1,11 +1,15 @@
 import unittest
 from pathlib import Path
+from subprocess import CompletedProcess
 from tempfile import TemporaryDirectory
+from unittest.mock import MagicMock, patch
 
 from docker_haproxy import (
     UpdateError,
+    USER_AGENT,
     build_parser,
     discover_branches,
+    fetch_resource,
     parse_current_version,
     parse_latest_version,
     parse_sha256,
@@ -14,6 +18,30 @@ from docker_haproxy import (
 
 
 class UpdaterTests(unittest.TestCase):
+    @patch("docker_haproxy.subprocess.run")
+    @patch("docker_haproxy.shutil.which", return_value="/usr/bin/curl")
+    def test_fetch_resource_prefers_curl(self, which: MagicMock, run: MagicMock) -> None:
+        run.return_value = CompletedProcess([], 0, stdout=b"checksum", stderr=b"")
+
+        self.assertEqual(fetch_resource("https://example.test/file"), "checksum")
+        command = run.call_args.args[0]
+        self.assertEqual(command[0], "/usr/bin/curl")
+        self.assertEqual(command[command.index("--user-agent") + 1], USER_AGENT)
+        which.assert_called_once_with("curl")
+
+    @patch("docker_haproxy.urlopen")
+    @patch("docker_haproxy.shutil.which", return_value=None)
+    def test_fetch_resource_falls_back_to_urllib(
+        self, which: MagicMock, urlopen: MagicMock
+    ) -> None:
+        response = urlopen.return_value.__enter__.return_value
+        response.read.return_value = b"checksum"
+
+        self.assertEqual(fetch_resource("https://example.test/file"), "checksum")
+        request = urlopen.call_args.args[0]
+        self.assertEqual(request.get_header("User-agent"), USER_AGENT)
+        which.assert_called_once_with("curl")
+
     def test_discovers_and_numerically_sorts_branch_directories(self) -> None:
         with TemporaryDirectory() as directory:
             root = Path(directory)
