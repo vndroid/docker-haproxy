@@ -1,0 +1,17 @@
+[project]
+name = "docker-haproxy"
+version = "0.1.0"
+description = "Self-managed Dockerfiles for HAProxy"
+readme = "README.md"
+authors = [
+    { name = "kane", email = "waveworkshop@outlook.com" }
+]
+requires-python = ">=3.13"
+dependencies = []
+
+[project.scripts]
+tools = "docker_haproxy:main"
+
+[build-system]
+requires = ["uv_build>=0.12.10,<0.13.0"]
+build-backend = "uv_build"
