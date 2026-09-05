@@ -4,11 +4,11 @@
 
 ## Latest version
 
-| Branch | End of life | Latest version | Links |
-| --- | --- | --- | --- |
-| [3.4](http://git.haproxy.org/?p=haproxy-3.4.git) | 2031-Q2 (LTS) | 3.4.4 | [git](http://git.haproxy.org/git/haproxy-3.4.git/) |
-| [3.2](http://git.haproxy.org/?p=haproxy-3.2.git) | 2030-Q2 (LTS) | 3.2.23 | [git](http://git.haproxy.org/git/haproxy-3.2.git/) |
-| [3.0](http://git.haproxy.org/?p=haproxy-3.0.git) | 2029-Q2 (LTS) | 3.0.27 | [git](http://git.haproxy.org/git/haproxy-3.0.git/) |
+| Branch | Release date | End of life | Latest version | Links |
+| --- | --- | --- | --- | --- |
+| [3.4](http://git.haproxy.org/?p=haproxy-3.4.git) | 2026-06-03 | 2031-Q2 (LTS) | 3.4.4 | [git](http://git.haproxy.org/git/haproxy-3.4.git/) |
+| [3.2](http://git.haproxy.org/?p=haproxy-3.2.git) | 2025-05-28 | 2030-Q2 (LTS) | 3.2.23 | [git](http://git.haproxy.org/git/haproxy-3.2.git/) |
+| [3.0](http://git.haproxy.org/?p=haproxy-3.0.git) | 2024-05-29 | 2029-Q2 (LTS) | 3.0.27 | [git](http://git.haproxy.org/git/haproxy-3.0.git/) |
 
 ## Automated tool
 
