@@ -1,4 +1,16 @@
-# docker-haproxy updater
+# HAProxy for container
+
+[HAProxy](https://www.haproxy.org/), The Reliable, High Performance TCP/HTTP Load Balancer.
+
+## Latest version
+
+| Branch | End of life | Latest version | Links |
+| --- | --- | --- | --- |
+| [3.4](http://git.haproxy.org/?p=haproxy-3.4.git) | 2031-Q2 (LTS) | 3.4.4 | [git](http://git.haproxy.org/git/haproxy-3.4.git/) |
+| [3.2](http://git.haproxy.org/?p=haproxy-3.2.git) | 2030-Q2 (LTS) | 3.2.23 | [git](http://git.haproxy.org/git/haproxy-3.2.git/) |
+| [3.0](http://git.haproxy.org/?p=haproxy-3.0.git) | 2029-Q2 (LTS) | 3.0.27 | [git](http://git.haproxy.org/git/haproxy-3.0.git/) |
+
+## Automated tool
 
 Checks the HAProxy remote repository for the latest stable tag and updates
 `HAPROXY_VERSION`, `HAPROXY_URL`, and `HAPROXY_SHA256` in the corresponding
