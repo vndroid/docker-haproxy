@@ -6,7 +6,6 @@ from pathlib import Path
 from urllib.request import Request, urlopen
 
 
-DEFAULT_BRANCH = "3.0"
 REMOTE_URL_TEMPLATE = "https://git.haproxy.org/git/haproxy-{branch}.git/"
 DOWNLOAD_URL_TEMPLATE = (
     "https://www.haproxy.org/download/{branch}/src/haproxy-{version}.tar.gz"
@@ -15,6 +14,36 @@ DOWNLOAD_URL_TEMPLATE = (
 
 class UpdateError(Exception):
     pass
+
+
+def discover_branches(root: Path) -> list[str]:
+    branches = [
+        path.name
+        for path in root.iterdir()
+        if path.is_dir()
+        and re.fullmatch(r"\d+\.\d+", path.name)
+        and (path / "Dockerfile").is_file()
+    ]
+    if not branches:
+        raise UpdateError(f"no HAProxy branch directories found in {root}.")
+    return sorted(branches, key=lambda branch: tuple(map(int, branch.split("."))))
+
+
+def find_repository_root(root: Path | None) -> Path:
+    if root is not None:
+        resolved = root.resolve()
+        if not resolved.is_dir():
+            raise UpdateError(f"repository root not found: {resolved}.")
+        discover_branches(resolved)
+        return resolved
+
+    for directory in (Path.cwd(), *Path.cwd().parents):
+        try:
+            discover_branches(directory)
+        except UpdateError:
+            continue
+        return directory
+    raise UpdateError("unable to locate the repository root; use --root.")
 
 
 def parse_current_version(dockerfile: str) -> str:
@@ -156,10 +185,12 @@ def build_parser() -> argparse.ArgumentParser:
     parser = argparse.ArgumentParser(description="docker-haproxy project tools")
     commands = parser.add_subparsers(dest="command", required=True)
     update_parser = commands.add_parser(
-        "update", help="check stable HAProxy tags and update the Dockerfile"
+        "update", help="check stable HAProxy tags and update Dockerfiles"
     )
     update_parser.add_argument(
-        "--branch", default=DEFAULT_BRANCH, help="release branch (default: 3.0)"
+        "--branch",
+        action="append",
+        help="only update this branch (repeatable; default: all detected branches)",
     )
     update_parser.add_argument("--root", type=Path, help="docker-haproxy repository root")
     update_parser.add_argument("--repo-url", help="override the HAProxy Git repository URL")
@@ -178,13 +209,22 @@ def build_parser() -> argparse.ArgumentParser:
 def main() -> None:
     args = build_parser().parse_args()
     try:
-        status = update(
-            branch=args.branch,
-            root=args.root,
-            repo_url=args.repo_url,
-            check=args.check,
-            dry_run=args.dry_run,
-        )
+        root = find_repository_root(args.root)
+        branches = list(dict.fromkeys(args.branch or discover_branches(root)))
+        if args.repo_url and len(branches) != 1:
+            raise UpdateError("--repo-url requires exactly one --branch.")
+
+        statuses = [
+            update(
+                branch=branch,
+                root=root,
+                repo_url=args.repo_url,
+                check=args.check,
+                dry_run=args.dry_run,
+            )
+            for branch in branches
+        ]
+        status = max(statuses)
     except (UpdateError, OSError, ValueError) as exc:
         print(f"error: {exc}", file=sys.stderr)
         raise SystemExit(2) from exc

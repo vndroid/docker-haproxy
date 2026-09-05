@@ -1,7 +1,11 @@
 import unittest
+from pathlib import Path
+from tempfile import TemporaryDirectory
 
 from docker_haproxy import (
     UpdateError,
+    build_parser,
+    discover_branches,
     parse_current_version,
     parse_latest_version,
     parse_sha256,
@@ -10,6 +14,21 @@ from docker_haproxy import (
 
 
 class UpdaterTests(unittest.TestCase):
+    def test_discovers_and_numerically_sorts_branch_directories(self) -> None:
+        with TemporaryDirectory() as directory:
+            root = Path(directory)
+            for branch in ("3.10", "3.2", "3.4", "not-a-branch"):
+                (root / branch).mkdir()
+            for branch in ("3.10", "3.2"):
+                (root / branch / "Dockerfile").touch()
+
+            self.assertEqual(discover_branches(root), ["3.2", "3.10"])
+
+    def test_update_command_defaults_to_all_branches(self) -> None:
+        args = build_parser().parse_args(["update"])
+
+        self.assertIsNone(args.branch)
+
     def test_latest_version_uses_numeric_patch_order(self) -> None:
         output = "\n".join(
             [

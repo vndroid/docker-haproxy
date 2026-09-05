@@ -21,7 +21,7 @@ stable releases from the selected branch. It obtains the SHA256 checksum from
 the official HAProxy download site and validates the archive filename.
 
 ```bash
-# Run from the repository root; defaults to checking and updating 3.0/Dockerfile
+# Check and update every detected branch (for example, 3.0, 3.2, and 3.4)
 uv run tools update
 
 # Check without modifying files; exits with status 1 when an update is available
@@ -30,8 +30,11 @@ uv run tools update --check
 # Preview the version and SHA256 without modifying files
 uv run tools update --dry-run
 
-# Check another maintained branch
+# Only check and update a specific branch
 uv run tools update --branch 3.0
+
+# Limit the update to multiple specific branches
+uv run tools update --branch 3.0 --branch 3.2
 ```
 
 If the repository root cannot be detected automatically, specify it explicitly
