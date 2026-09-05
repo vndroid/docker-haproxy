@@ -101,7 +101,7 @@ def get_remote_tags(repo_url: str) -> str:
 
 
 def get_checksum(url: str, expected_filename: str) -> str:
-    request = Request(url, headers={"User-Agent": "docker-haproxy-updater/0.1"})
+    request = Request(url, headers={"User-Agent": "Mozilla/5.0 (Macintosh; Intel Mac OS X 10.15; rv:150.0) Gecko/20100101 Firefox/150.0"})
     try:
         with urlopen(request, timeout=30) as response:
             content = response.read().decode("ascii")
