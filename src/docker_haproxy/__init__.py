@@ -165,6 +165,10 @@ def fetch_resource(url: str) -> str:
         except UnicodeError as exc:
             raise UpdateError(f"resource from {url} is not ASCII text.") from exc
 
+    print(
+        "The curl command was not found; falling back to the standard library.",
+        file=sys.stderr,
+    )
     request = Request(url, headers={"User-Agent": USER_AGENT})
     try:
         with urlopen(request, timeout=30) as response:

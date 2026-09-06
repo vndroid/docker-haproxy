@@ -1,4 +1,6 @@
 import unittest
+from contextlib import redirect_stderr
+from io import StringIO
 from pathlib import Path
 from subprocess import CompletedProcess
 from tempfile import TemporaryDirectory
@@ -37,9 +39,15 @@ class UpdaterTests(unittest.TestCase):
         response = urlopen.return_value.__enter__.return_value
         response.read.return_value = b"checksum"
 
-        self.assertEqual(fetch_resource("https://example.test/file"), "checksum")
+        stderr = StringIO()
+        with redirect_stderr(stderr):
+            self.assertEqual(fetch_resource("https://example.test/file"), "checksum")
         request = urlopen.call_args.args[0]
         self.assertEqual(request.get_header("User-agent"), USER_AGENT)
+        self.assertEqual(
+            stderr.getvalue(),
+            "The curl command was not found; falling back to the standard library.\n",
+        )
         which.assert_called_once_with("curl")
 
     def test_discovers_and_numerically_sorts_branch_directories(self) -> None:
